@@ -1,0 +1,12 @@
+version: '3'
+services:
+  rstudio:
+    image: omtexon17/docker    # Usa la imagen que subiste a Docker Hub
+    ports:
+      - "8787:8787"            # Mapea el puerto 8787 de RStudio Server
+    volumes:
+      - ./mounted_dir:/home/rstudio/mounted_dir  # Directorio montado en el host
+    environment:
+      - PASSWORD=123           # Define la contraseña para el usuario rstudio
+    stdin_open: true           # Para permitir interacción con la consola
+    tty: true                  # Necesario para entornos como RStudio

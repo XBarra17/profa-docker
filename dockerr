@@ -1,0 +1,25 @@
+# Usa la imagen base de rocker/rstudio
+FROM rocker/rstudio:latest
+
+# Cambiar la contraseña del usuario rstudio a "123"
+RUN echo "rstudio:123" | chpasswd
+
+# Instalar las librerías necesarias
+RUN R -e "install.packages(c('ggplot2'), repos='http://cran.rstudio.com/')"
+
+# Crear el script R pero no ejecutarlo
+RUN echo ' \
+    library(ggplot2); \
+    data(iris); \
+    p <- ggplot(iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species)) + \
+        geom_point() + \
+        ggtitle("Gráfico de iris con ggplot2"); \
+    print(p); \
+    ggsave("/home/rstudio/mounted_dir/iris_plot.png", plot = p); \
+    ' > /home/rstudio/generate_plot.R
+
+# Establecer permisos para la carpeta montada
+RUN mkdir /home/rstudio/mounted_dir && chown rstudio:rstudio /home/rstudio/mounted_dir
+
+# Ejecutar el servidor de RStudio en el puerto 8787 y ejecutar el script R
+CMD ["bash", "-c", "rstudio-server start && Rscript /home/rstudio/generate_plot.R && tail -f /dev/null"]
